@@ -1,0 +1,56 @@
+name: Publish v3.1 Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create or Update v3.1 Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat << 'EOF' > release_notes.md
+          ## ASMR Whisper Studio v3.1
+
+          专为日语同人音声（ASMR）与影视打造的本地 AI 语音识别与硬字幕压制工作站。
+          Local AI Speech-to-Text & Hardsub Studio for Japanese ASMR & Videos.
+
+          ---
+
+          ### 🇨🇳 v3.1 更新内容
+          - **提示词引擎升级**：修复提示词仅在视频前 30 秒生效的问题，现已支持全片长音频持续锚定，大幅降低长视频后半段漏词与假名幻觉。
+          - **全新三大预设词库**：内置「通用预设（空白）」、「R18 ASMR 高频直白词库」、「AV 实战高频词库」，纯核心词汇无标点污染。
+          - **智能断句优化**：移除生硬的“单行最大字数上限”机械截断滑块，全面交由日语语法词法边界（Janome / BudouX）与呼吸停顿自然断句。
+          - **UI 细节打磨**：优化字幕排版微调框（字号、垂直边距、描边粗细）的上下步进箭头视觉指示。
+
+          ---
+
+          ### 🇬🇧 v3.1 Release Notes
+          - **Full-Duration Prompt Anchoring**: Fixed an issue where initial prompts only affected the first 30 seconds; vocabulary anchoring now persists across the entire audio/video duration.
+          - **3 Built-in Prompt Presets**: Added clean, high-frequency vocabulary presets for **General (Blank)**, **R18 ASMR**, and **AV** without punctuation noise.
+          - **Natural Sentence Segmentation**: Removed rigid character-count line splitting in favor of natural Japanese syntactic boundary detection (Janome / BudouX) and pause timing.
+          - **UI Refinement**: Added clear up/down step arrow indicators to subtitle style spinboxes (font size, vertical margin, outline width).
+
+          ---
+
+          ### 📦 安装说明 / Installation
+          1. 下载下方 **`ASMR-Whisper-Studio-Setup(3.1).exe`** 并运行安装（内置 Python 与 FFmpeg 环境，开箱即用）。
+          2. 将 Whisper 模型文件夹（如 `large-v3`、`large-v3-turbo`）放入安装目录下的 `Model/` 文件夹即可离线使用。
+          - **SHA-256**: `399fdf94bc94cd47ab2e6142c11ce02a435f25e2c1aaa2d0ae6a1ec1aca8ab69`
+          EOF
+
+          if gh release view v3.1 >/dev/null 2>&1; then
+            gh release edit v3.1 --title "ASMR Whisper Studio v3.1" --notes-file release_notes.md
+          else
+            gh release create v3.1 --title "ASMR Whisper Studio v3.1" --notes-file release_notes.md --target main
+          fi
