@@ -1,0 +1,23 @@
+# 运行时与独立绿色环境 (不纳入源码版本控制，安装包通过 Release 独立发布)
+runtime/
+Model/
+bin/
+_backup_original/
+_backup_clean/
+
+# 系统生成与用户持久化配置
+unins000.*
+user_settings.json
+scratch/
+dist/
+build/
+*.egg-info/
+
+# 编译缓存与临时产物
+__pycache__/
+*.pyc
+*.tmp
+*.exe
+*.dat
+*.flag
+app_crash.log

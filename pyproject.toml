@@ -1,0 +1,118 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asmr-whisper-studio"
+version = "3.0.0"
+description = "日系 R18 ASMR 专用语音转录与字幕压制工作站 (针对 NVIDIA RTX 50 Blackwell 架构优化)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "ASMR Whisper Studio Team" },
+]
+keywords = [
+    "asmr",
+    "whisper",
+    "faster-whisper",
+    "speech-recognition",
+    "subtitles",
+    "cuda",
+    "pyside6",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Multimedia :: Video",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: Microsoft :: Windows",
+]
+
+dependencies = [
+    "numpy>=1.24.0,<3.0.0",
+    "requests>=2.28.0",
+    "tqdm>=4.65.0",
+    "packaging>=23.0",
+]
+
+[project.optional-dependencies]
+ui = [
+    "PySide6>=6.5.0",
+    "shiboken6>=6.5.0",
+]
+
+media = [
+    "av>=11.0.0",
+    "soundfile>=0.12.0",
+]
+
+inference = [
+    "faster-whisper>=1.0.0",
+    "ctranslate2>=4.0.0",
+    "onnxruntime>=1.16.0",
+    "huggingface-hub>=0.20.0",
+    "tokenizers>=0.15.0",
+    "janome>=0.5.0",
+    "budoux>=0.9.0",
+]
+
+cuda = [
+    "nvidia-cublas-cu12>=12.1.0",
+    "nvidia-cudnn-cu12>=9.0.0",
+    "nvidia-cuda-nvrtc-cu12>=12.1.0",
+]
+
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.4.0",
+    "black>=24.0.0",
+    "pyinstaller>=6.0.0",
+]
+
+all = [
+    "PySide6>=6.5.0",
+    "shiboken6>=6.5.0",
+    "av>=11.0.0",
+    "soundfile>=0.12.0",
+    "faster-whisper>=1.0.0",
+    "ctranslate2>=4.0.0",
+    "onnxruntime>=1.16.0",
+    "huggingface-hub>=0.20.0",
+    "tokenizers>=0.15.0",
+    "janome>=0.5.0",
+    "nvidia-cublas-cu12>=12.1.0",
+    "nvidia-cudnn-cu12>=9.0.0",
+    "nvidia-cuda-nvrtc-cu12>=12.1.0",
+    "pytest>=8.0.0",
+    "ruff>=0.4.0",
+    "black>=24.0.0",
+    "pyinstaller>=6.0.0",
+]
+
+[project.scripts]
+asmr-whisper-studio = "main:main"
+
+[tool.setuptools]
+py-modules = ["main", "transcriber"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "ui*"]
+exclude = ["runtime*", "Model*", "bin*", "_backup_original*", "tools*"]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]

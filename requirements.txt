@@ -1,0 +1,6 @@
+# ==============================================================================
+# ASMR Whisper Studio - Root Requirements Entry Point
+# Installs core UI/media dependencies and CUDA 12 hardware acceleration
+# ==============================================================================
+-r requirements/cuda12.txt
+-r requirements/base.txt

@@ -1,0 +1,61 @@
+# -*- coding: utf-8 -*-
+"""
+ASMR Whisper Studio - 根目录 transcriber 兼容代理门面
+自动代理重定向至 core.transcriber
+"""
+
+from core.transcriber import (
+    clean_sub_text,
+    setup_cuda_dll_paths,
+    find_local_models,
+    resolve_model_path,
+    DEFAULT_ASMR_PROMPT,
+    DEFAULT_PUNCTUATIONS,
+    TRIVIAL_SOUNDS,
+    PUNCTUATION_AND_NOISE_PATTERN,
+    REPETITION_STRIP_REGEX,
+    JAPANESE_PARTICLES_AND_ENDINGS,
+    GRAMMAR_SUFFIX_PREFIXES,
+    clean_r18_segments,
+    is_pure_moan_or_sound,
+    normalize_text_core,
+    is_repetitive_hallucination,
+    is_forbidden_split,
+    merge_orphan_fragments,
+    segment_words_hierarchically,
+    ASMRTranscriberConfig,
+    SettingsManager,
+    format_timestamp,
+    export_subtitles,
+    write_custom_ass,
+    ASMRTranscriber,
+    is_pure_punctuation_or_noise,
+)
+
+__all__ = [
+    "clean_sub_text",
+    "setup_cuda_dll_paths",
+    "find_local_models",
+    "resolve_model_path",
+    "DEFAULT_ASMR_PROMPT",
+    "DEFAULT_PUNCTUATIONS",
+    "TRIVIAL_SOUNDS",
+    "PUNCTUATION_AND_NOISE_PATTERN",
+    "REPETITION_STRIP_REGEX",
+    "JAPANESE_PARTICLES_AND_ENDINGS",
+    "GRAMMAR_SUFFIX_PREFIXES",
+    "clean_r18_segments",
+    "is_pure_moan_or_sound",
+    "normalize_text_core",
+    "is_repetitive_hallucination",
+    "is_forbidden_split",
+    "merge_orphan_fragments",
+    "segment_words_hierarchically",
+    "ASMRTranscriberConfig",
+    "SettingsManager",
+    "format_timestamp",
+    "export_subtitles",
+    "write_custom_ass",
+    "ASMRTranscriber",
+    "is_pure_punctuation_or_noise",
+]

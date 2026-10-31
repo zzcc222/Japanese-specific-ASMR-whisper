@@ -1,0 +1,8 @@
+# ==============================================================================
+# ASMR Whisper Studio - CUDA 12 Hardware Acceleration Dependencies
+# Targets: NVIDIA RTX 5070 (Blackwell architecture) & CUDA 12.x series
+# Note: Core CUDA 12.8 runtime DLLs (cublas, cublasLt, cudart) are bundled in bin/
+# ==============================================================================
+nvidia-cublas-cu12==12.9.2.10
+nvidia-cudnn-cu12==9.26.0.51
+nvidia-cuda-nvrtc-cu12==12.9.86
