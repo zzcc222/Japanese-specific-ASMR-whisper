@@ -1,9 +1,9 @@
 ; Inno Setup 6 Script for ASMR Whisper Studio
-; Version: 3.0
+; Version: 3.1
 ; Target: Windows x64
 
 #define MyAppName "ASMR Whisper Studio"
-#define MyAppVersion "3.0"
+#define MyAppVersion "3.1"
 #define MyAppPublisher "zzcc222"
 #define MyAppURL "https://github.com/zzcc222/Japanese-specific-ASMR-whisper"
 #define MyAppExeName "ASMR-Whisper-Studio.exe"
@@ -26,7 +26,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
 OutputDir=dist
-OutputBaseFilename=ASMR-Whisper-Studio-Setup(3.0)
+OutputBaseFilename=ASMR-Whisper-Studio-Setup(3.1)
 SetupIconFile=assets\app.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/max
@@ -35,13 +35,13 @@ WizardStyle=modern
 DisableProgramGroupPage=yes
 CloseApplications=yes
 RestartApplications=no
-VersionInfoVersion=3.0.0.0
-VersionInfoTextVersion=3.0.0
+VersionInfoVersion=3.1.0.0
+VersionInfoTextVersion=3.1.0
 VersionInfoCompany=zzcc222
-VersionInfoDescription=ASMR Whisper Studio 3.0 安装向导
+VersionInfoDescription=ASMR Whisper Studio 3.1 安装向导
 VersionInfoCopyright=Copyright (C) 2026 zzcc222
 VersionInfoProductName=ASMR Whisper Studio
-VersionInfoProductVersion=3.0.0
+VersionInfoProductVersion=3.1.0
 
 [Languages]
 Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"

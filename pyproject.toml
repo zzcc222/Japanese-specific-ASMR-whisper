@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asmr-whisper-studio"
-version = "3.0.0"
+version = "3.1.0"
 description = "日系 R18 ASMR 专用语音转录与字幕压制工作站 (针对 NVIDIA RTX 50 Blackwell 架构优化)"
 readme = "README.md"
 requires-python = ">=3.10"

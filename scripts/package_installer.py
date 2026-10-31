@@ -19,7 +19,7 @@ if sys.platform == "win32":
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOWNLOADS_DIR = r"C:\Users\33639\Downloads"
-VERSION = "3.0"
+VERSION = "3.1"
 INSTALLER_NAME = f"ASMR-Whisper-Studio-Setup({VERSION}).exe"
 
 ISCC_CANDIDATES = [
@@ -183,7 +183,7 @@ def deploy_and_verify(installer_path: str):
     print("  [4/4] SHA-256 完整性哈希校验: PASS")
 
     print("\n" + "=" * 70)
-    print("【压制与发布圆满成功】ASMR Whisper Studio v3.0 安装包已就绪！")
+    print(f"【压制与发布圆满成功】ASMR Whisper Studio v{VERSION} 安装包已就绪！")
     print(f"安装包最终位置: {target_path}")
     print(f"文件大小: {size_bytes:,} 字节 ({size_gb:.2f} GB)")
     print(f"SHA-256: {digest}")
