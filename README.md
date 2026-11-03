@@ -11,7 +11,7 @@
 
 ### ✨ 核心特性
 - **耳语高灵敏度识别与全程热词锚定**：针对极微弱耳语与贴耳人声调优，支持跨 30 秒滑窗全片持续挂载热词，内置 **⚪ 空白 (通用预设)**、**🎧 R18 ASMR**、**🎬 AV** 三套高频词库预设。
-- **日系语法自然断句与防幻觉净化**：融合 **Janome 形态素分析** 与 **Google BudouX 文节切分**，支持语法词尾保护、无意义喘息/符号噪波过滤及相邻复读去重。
+- **Whisper 原生时间戳、标点断句与防幻觉净化**：基于 **Whisper 原生段落时间戳**、**标点自然断句** 与 **单句最大时长弹性控制**，支持无意义纯拟音/符号噪波过滤及相邻复读去重。
 - **可视化校对与硬件加速压制**：内置毫秒级音频波形时间轴与视频预览，支持导出 `SRT` / `ASS (卡拉OK)` / `VTT` / `TXT`，并提供 **FFmpeg NVENC 硬字幕压制** 与 **MP4/MKV 软字幕极速合流**。
 
 ### 🚀 快速开始
@@ -37,7 +37,7 @@ python main.py
 
 ### ✨ Key Features
 - **High-Sensitivity Whisper & Full-Video Hotword Anchoring**: Tuned for ultra-soft binaural whispers with persistent hotword injection across all 30-second sliding windows. Includes built-in **General (Blank)**, **R18 ASMR**, and **AV** vocabulary presets.
-- **Japanese Syntactic Segmentation & Anti-Hallucination**: Combines **Janome** morphological analysis and **Google BudouX** phrase segmentation with grammar suffix protection, moan/punctuation noise filtering, and repetition suppression.
+- **Whisper Native Timestamps, Punctuation Segmentation & Anti-Hallucination**: Combines **Whisper native segment timestamps**, **punctuation-first splitting**, and **elastic max-duration control** with moan/punctuation noise filtering and repetition suppression.
 - **Waveform Timeline & Hardware Subtitle Burner**: Features an interactive audio waveform timeline and video preview. Exports `SRT`, `ASS (Karaoke)`, `VTT`, and `TXT`, with **FFmpeg NVENC hardware hardsub burning** and lossless **MP4/MKV softsub muxing**.
 
 ### 🚀 Quick Start

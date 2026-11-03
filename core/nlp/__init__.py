@@ -3,13 +3,6 @@
 ASMR Whisper Studio - 日语 NLP、文本清洗、R18 净化与提示词解析子包
 """
 
-from .japanese_syntax import (
-    HAS_JANOME,
-    get_janome_tokenizer,
-    get_syntactic_split_score,
-    is_forbidden_split,
-    tokenize_ja,
-)
 from .prompt_parser import (
     DEFAULT_CUSTOM_PRESETS,
     PRESET_PROMPTS,
@@ -29,6 +22,7 @@ from .text_cleaner import (
     DEFAULT_R18_ASMR_PROMPT,
     clean_sub_text,
     coalesce_whisper_subwords,
+    is_forbidden_split,
     is_noise_or_empty_token,
     is_pure_punctuation_or_noise,
     is_repetitive_hallucination,
@@ -38,11 +32,7 @@ from .text_cleaner import (
 )
 
 __all__ = [
-    "HAS_JANOME",
-    "get_janome_tokenizer",
-    "get_syntactic_split_score",
     "is_forbidden_split",
-    "tokenize_ja",
     "DEFAULT_ASMR_PROMPT",
     "DEFAULT_R18_ASMR_PROMPT",
     "DEFAULT_AV_PROMPT",

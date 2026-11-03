@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "asmr-whisper-studio"
-version = "3.1.0"
+version = "3.2.0"
 description = "日系 R18 ASMR 专用语音转录与字幕压制工作站 (针对 NVIDIA RTX 50 Blackwell 架构优化)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -57,8 +57,6 @@ inference = [
     "onnxruntime>=1.16.0",
     "huggingface-hub>=0.20.0",
     "tokenizers>=0.15.0",
-    "janome>=0.5.0",
-    "budoux>=0.9.0",
 ]
 
 cuda = [
@@ -84,7 +82,6 @@ all = [
     "onnxruntime>=1.16.0",
     "huggingface-hub>=0.20.0",
     "tokenizers>=0.15.0",
-    "janome>=0.5.0",
     "nvidia-cublas-cu12>=12.1.0",
     "nvidia-cudnn-cu12>=9.0.0",
     "nvidia-cuda-nvrtc-cu12>=12.1.0",
