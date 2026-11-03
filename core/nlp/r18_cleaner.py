@@ -12,7 +12,6 @@ import re
 import unicodedata
 from typing import Any, Dict, List, Optional
 
-from .japanese_syntax import get_janome_tokenizer
 from .text_cleaner import normalize_text_core
 
 # ------------------------------------------------------------------------------
@@ -93,7 +92,7 @@ RAW_MOAN_WORDS = {
     "エ", "ェ", "エエ", "エェ", "エー", "エッ",
     "オ", "ォ", "オオ", "オぉ", "オー", "オッ",
     "ハ", "ハァ", "ハア", "ハー", "ハッ", "ハフ", "ハフゥ",
-    "ヒ", "ヒィ", "ヒイ", "ヒー", "ヒッ", "ヒア", "ヒャ", "ヒャア", "ヒャァ", "ヒャッ", "ヒグ", "ヒグッ", "ヒぇ",
+    "ヒ", "ヒィ", "ヒイ", "ヒー", "ヒッ", "ヒア", "ヒャ", "ヒャア", "ヒャァ", "ヒャッ", "ヒグ", "ヒグッ", "ヒェ",
     "フ", "フゥ", "フウ", "フー", "フッ", "フア", "フン",
     "ヘ", "ヘェ", "ヘエ", "ヘー", "ヘッ",
     "ホ", "ホォ", "ホオ", "ホー", "ホッ",
@@ -162,29 +161,6 @@ def is_pure_moan_or_sound(text: str) -> bool:
 
     if core in COMMON_SHORT_WORDS or stripped in COMMON_SHORT_WORDS:
         return False
-
-    tokenizer = get_janome_tokenizer()
-    if tokenizer is not None:
-        try:
-            tokens = list(tokenizer.tokenize(stripped))
-            for tok in tokens:
-                pos = tok.part_of_speech.split(",")
-                if pos[0] == "動詞" and pos[1] == "自立" and len(tok.surface) >= 2:
-                    if tok.surface not in RAW_MOAN_WORDS and not MOAN_CHAR_PATTERN.fullmatch(tok.surface):
-                        return False
-                elif pos[0] in ("名詞", "形容詞"):
-                    if pos[1] in ("非自立", "接尾", "特殊"):
-                        continue
-                    if not re.search(r"[\u4E00-\u9FFF]", tok.surface) and MOAN_CHAR_PATTERN.fullmatch(tok.surface):
-                        continue
-                    if tok.surface not in RAW_MOAN_WORDS and len(tok.surface) >= 2:
-                        return False
-                elif pos[0] == "感動詞" and tok.surface in (
-                    "いいえ", "おい", "もしもし", "やあ", "おや", "あら", "さあ", "はい", "うん", "そう"
-                ):
-                    return False
-        except Exception:
-            pass
 
     if core in RAW_MOAN_WORDS or stripped in RAW_MOAN_WORDS:
         return True

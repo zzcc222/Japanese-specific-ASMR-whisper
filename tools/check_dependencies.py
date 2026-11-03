@@ -175,10 +175,10 @@ def validate_requirements_dir(project_root: str) -> Tuple[bool, Dict[str, Any], 
     if "nvidia-cublas-cu12" not in cuda_reqs:
         errors.append("[cuda12.txt] 必须包含 nvidia-cublas-cu12 硬件加速依赖")
 
-    # 2. lock-win-x64.txt 必须锁定 45 个核心包
+    # 2. lock-win-x64.txt 必须锁定 44 个核心包
     lock_reqs = parsed_info.get("lock-win-x64.txt", {}).get("requirements", [])
-    if len(lock_reqs) != 45:
-        errors.append(f"[lock-win-x64.txt] 锁文件包数量期望 45，实际检测到: {len(lock_reqs)}")
+    if len(lock_reqs) != 44:
+        errors.append(f"[lock-win-x64.txt] 锁文件包数量期望 44，实际检测到: {len(lock_reqs)}")
 
     return len(errors) == 0, parsed_info, errors
 
@@ -368,7 +368,7 @@ def main():
         rt_ok, _ = validate_root_requirements(p_root)
         lock_requirements = r_info.get("lock-win-x64.txt", {}).get("requirements", []) if r_ok else []
         matched, total, mismatches = check_runtime_match(lock_requirements) if lock_requirements else (0, 0, ["未加载锁文件"])
-        success = t_ok and r_ok and rt_ok and (matched == total == 45) and len(mismatches) == 0
+        success = t_ok and r_ok and rt_ok and (matched == total == 44) and len(mismatches) == 0
         sys.exit(0 if success else 1)
 
     success = diagnose_environment(args.project_root)

@@ -43,7 +43,7 @@ class ASMRTranscriberWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("central_window")
-        self.setWindowTitle("ASMR Whisper Studio v3.0 - 日系音声专用语音识别转录")
+        self.setWindowTitle("ASMR Whisper Studio v3.2 - 日系音声专用语音识别转录")
         self.setMinimumSize(1020, 680)
         self.resize(1920, 1080)
         self._saved_window_w = 1920
@@ -119,9 +119,6 @@ class ASMRTranscriberWindow(QMainWindow):
 
         self.card_r18 = self.config_panel.card_r18
         self.chk_no_prev_text = self.config_panel.chk_no_prev_text
-        self.chk_strict_thresh = self.config_panel.chk_strict_thresh
-        self.chk_split_punct = self.config_panel.chk_split_punct
-        self.chk_dedup_identical = self.config_panel.chk_dedup_identical
         self.chk_filter_r18_moans = self.config_panel.chk_filter_r18_moans
         self.slider_max_dur = self.config_panel.slider_max_dur
         self.lbl_max_dur = self.config_panel.lbl_max_dur
@@ -217,7 +214,7 @@ class ASMRTranscriberWindow(QMainWindow):
         else:
             lbl_logo.setText("🎙️")
 
-        self.lbl_app_title = QLabel("ASMR Whisper v3.0")
+        self.lbl_app_title = QLabel("ASMR Whisper v3.2")
         self.lbl_app_title.setStyleSheet("font-size: 14px; font-weight: 800; color: #18181B; letter-spacing: -0.2px;")
         brand_layout.addWidget(lbl_logo, alignment=Qt.AlignVCenter)
         brand_layout.addWidget(self.lbl_app_title, alignment=Qt.AlignVCenter)
@@ -302,7 +299,7 @@ class ASMRTranscriberWindow(QMainWindow):
 
         self.lbl_footer_left = QLabel(self.footer_bar)
         self.lbl_footer_left.setStyleSheet("color: #71717A; font-size: 11px;")
-        lbl_footer_right = QLabel("ASMR Whisper Studio v3.0")
+        lbl_footer_right = QLabel("ASMR Whisper Studio v3.2")
         lbl_footer_right.setStyleSheet("color: #A1A1AA; font-size: 11px;")
 
         footer_layout.addWidget(self.lbl_footer_left)
@@ -329,16 +326,17 @@ class ASMRTranscriberWindow(QMainWindow):
         self.right_scroll.verticalScrollBar().setSingleStep(20)
         self.right_scroll.setStyleSheet("""
             QScrollArea#right_scroll {
-                background: transparent;
+                background-color: #F4F5F8;
                 border: none;
             }
             QScrollArea#right_scroll > QWidget > QWidget {
-                background: transparent;
+                background-color: #F4F5F8;
             }
         """)
 
         self.right_widget = QWidget()
         self.right_widget.setObjectName("right_widget")
+        self.right_widget.setStyleSheet("QWidget#right_widget { background-color: #F4F5F8; }")
         right_layout = QVBoxLayout(self.right_widget)
         right_layout.setContentsMargins(0, 0, 4, 0)
         right_layout.setSpacing(12)

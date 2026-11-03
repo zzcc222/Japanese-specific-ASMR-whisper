@@ -513,7 +513,7 @@ class ASMRTranscriber:
                 if txt and not is_pure_punctuation_or_noise(txt):
                     s_start = float(s.get("start", 0.0))
                     s_end = float(s.get("end", 0.0))
-                    max_s_dur = max(2.5, min(float(self.config.clamp_max_duration or 8.0), len(txt) * 0.40))
+                    max_s_dur = max(2.5, float(self.config.clamp_max_duration or 12.0))
                     if s_end - s_start > max_s_dur:
                         s_end = round(s_start + max_s_dur, 3)
                     all_words.append(
@@ -525,7 +525,7 @@ class ASMRTranscriber:
                         }
                     )
 
-        # 第一步：先将 faster-whisper 拆散的子词（长音 ー、促音 っ、句号、同一形态素词）聚合还原为完整词汇
+        # 第一步：轻量级子词标点/长音归属规范化（不破坏 Whisper 原生词汇与段落结构）
         all_words = coalesce_whisper_subwords(all_words)
 
         # 第二步：词级微口吃去重（严格要求表层词形一致、词长 >= 2 且不在叠词白名单内，杜绝误吞助词 に 与叠词 ではでは）
@@ -560,7 +560,7 @@ class ASMRTranscriber:
                     deduped_words.append(w)
             all_words = deduped_words
 
-        # 第三步：多级自适应形态素与标点/停顿/时长断句
+        # 第三步：基于 Whisper 原生时间戳 + 标点切分 + 单句最大时长弹性断句
         min_dur = getattr(self.config, "min_segment_duration", 2.0)
         if all_words:
             final_refined = segment_words_hierarchically(
@@ -581,13 +581,6 @@ class ASMRTranscriber:
                 deduplicate_identical=self.config.deduplicate_identical,
                 max_dedup_gap=self.config.max_dedup_gap,
             )
-
-        max_seg_dur = float(self.config.clamp_max_duration or 8.0)
-        for seg in final_refined:
-            s_start = float(seg.get("start", 0.0) or 0.0)
-            s_end = float(seg.get("end", 0.0) or 0.0)
-            if s_end - s_start > max_seg_dur:
-                seg["end"] = round(s_start + max(2.2, min(max_seg_dur, len(seg.get("text", "")) * 0.32)), 3)
 
         logger.info(f"成功重整并保护 {len(final_refined)} 个自然语义字幕句段！")
         return final_refined

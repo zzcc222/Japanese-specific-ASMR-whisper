@@ -219,10 +219,16 @@ def run_all_checks():
     ev_right = QKeyEvent(QKeyEvent.KeyPress, Qt.Key_Right, Qt.NoModifier)
     burner.keyPressEvent(ev_right)
     burner.player_panel.shutdown()
+    if hasattr(win, "gpu_detector") and win.gpu_detector and win.gpu_detector.isRunning():
+        win.gpu_detector.wait(2000)
+    if hasattr(win, "tray_manager") and win.tray_manager:
+        win.tray_manager.cleanup()
     print("  ✅ 批量压制队列与快捷键事件校验通过")
     print("=" * 68)
     print("🎉 所有 8 项前端深度优化测试 100% 通过！")
+    sys.stdout.flush()
 
 
 if __name__ == "__main__":
     run_all_checks()
+    os._exit(0)

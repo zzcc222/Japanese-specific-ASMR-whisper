@@ -45,9 +45,6 @@ class SettingsSync:
                 "export_vtt": win.chk_vtt.isChecked(),
                 "enable_karaoke": win.chk_karaoke.isChecked(),
                 "no_previous_text": win.chk_no_prev_text.isChecked(),
-                "strict_compression_thresh": win.chk_strict_thresh.isChecked(),
-                "split_by_punctuation": win.chk_split_punct.isChecked(),
-                "deduplicate_identical": win.chk_dedup_identical.isChecked(),
                 "filter_r18_moans": win.chk_filter_r18_moans.isChecked(),
                 "vad_enabled": win.switch_vad.isChecked(),
                 "vad_threshold_slider": win.slider_vad_thresh.value(),
@@ -136,12 +133,6 @@ class SettingsSync:
 
             if "no_previous_text" in cfg:
                 win.chk_no_prev_text.setChecked(bool(cfg["no_previous_text"]))
-            if "strict_compression_thresh" in cfg:
-                win.chk_strict_thresh.setChecked(bool(cfg["strict_compression_thresh"]))
-            if "split_by_punctuation" in cfg:
-                win.chk_split_punct.setChecked(bool(cfg["split_by_punctuation"]))
-            if "deduplicate_identical" in cfg:
-                win.chk_dedup_identical.setChecked(bool(cfg["deduplicate_identical"]))
             if "filter_r18_moans" in cfg:
                 win.chk_filter_r18_moans.setChecked(bool(cfg["filter_r18_moans"]))
 
@@ -322,9 +313,6 @@ class SettingsSync:
         win.chk_karaoke.toggled.connect(win._queue_save_settings)
 
         win.chk_no_prev_text.toggled.connect(win._queue_save_settings)
-        win.chk_strict_thresh.toggled.connect(win._queue_save_settings)
-        win.chk_split_punct.toggled.connect(win._queue_save_settings)
-        win.chk_dedup_identical.toggled.connect(win._queue_save_settings)
         win.chk_filter_r18_moans.toggled.connect(win._queue_save_settings)
         win.slider_max_dur.valueChanged.connect(win._queue_save_settings)
 

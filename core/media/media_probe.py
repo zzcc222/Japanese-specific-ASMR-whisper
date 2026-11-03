@@ -140,14 +140,8 @@ def probe_media_info(file_path: str) -> Dict[str, Any]:
                                     if 0.5 < fval < 240.0:
                                         info["fps"] = round(fval, 2)
                                         break
-                                num, den = rate_str.split("/")
-                                if float(den) > 0:
-                                    val = float(num) / float(den)
-                                    if 0.5 < val < 240.0:
-                                        info["fps"] = round(val, 2)
-                                        break
-                            except Exception:
-                                pass
+                                except Exception:
+                                    pass
 
                 elif s.type == "audio" and not info["audio_codec"]:
                     raw_audio_codec = getattr(s.codec_context, "name", "") or getattr(getattr(s, "codec", None), "name", "")

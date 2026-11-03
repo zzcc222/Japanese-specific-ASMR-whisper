@@ -5,15 +5,14 @@ ASMR Whisper Studio - Apple 风格平滑折叠抽屉卡片组件
 """
 
 from PySide6.QtCore import (
-    Qt, Signal, Property, QPropertyAnimation, QEasingCurve,
-    QParallelAnimationGroup
+    Qt, Signal, Property, QPropertyAnimation, QEasingCurve
 )
 from PySide6.QtGui import (
     QColor, QPainter, QPen, QPainterPath
 )
 from PySide6.QtWidgets import (
     QWidget, QFrame, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QGraphicsOpacityEffect
+    QLabel, QPushButton, QLayout
 )
 
 
@@ -164,7 +163,7 @@ class CollapsibleCard(QFrame):
 
         main_layout.addWidget(self.header_btn)
 
-        # 抽屉内容容器
+        # 抽屉裁剪视口容器 (负责在动画期间平滑裁剪高度，避免子控件挤压重叠与 QGraphicsEffect 离屏残影)
         self.drawer_widget = QWidget(self)
         self.drawer_widget.setObjectName("drawer_content")
         self.drawer_widget.setStyleSheet("""
@@ -175,52 +174,96 @@ class CollapsibleCard(QFrame):
                 border-bottom-right-radius: 12px;
             }
         """)
-        self.drawer_layout = QVBoxLayout(self.drawer_widget)
+        self._drawer_outer_layout = QVBoxLayout(self.drawer_widget)
+        self._drawer_outer_layout.setContentsMargins(0, 0, 0, 0)
+        self._drawer_outer_layout.setSpacing(0)
+        self._drawer_outer_layout.setSizeConstraint(QLayout.SetNoConstraint)
+
+        # 内部固定排版容器 (动画期间锁定为完整目标高度，彻底杜绝内部控件上下挤压导致的重影/拖影)
+        self.content_holder = QWidget(self.drawer_widget)
+        self.content_holder.setObjectName("drawer_inner_holder")
+        self.content_holder.setStyleSheet("QWidget#drawer_inner_holder { background-color: transparent; border: none; }")
+        self.drawer_layout = QVBoxLayout(self.content_holder)
         self.drawer_layout.setContentsMargins(14, 12, 14, 14)
         self.drawer_layout.setSpacing(10)
+        self._drawer_outer_layout.addWidget(self.content_holder)
 
-        # 挂载透明度动效
-        self._opacity_effect = QGraphicsOpacityEffect(self.drawer_widget)
-        self.drawer_widget.setGraphicsEffect(self._opacity_effect)
-        self._opacity_effect.setOpacity(1.0 if expanded else 0.0)
-
-        # 高度与透明度动画组合
-        self._anim_group = QParallelAnimationGroup(self)
-
-        self._height_anim = QPropertyAnimation(self.drawer_widget, b"maximumHeight", self)
-        self._height_anim.setDuration(220)
+        self._drawer_h = 0
+        self._height_anim = QPropertyAnimation(self, b"drawer_height", self)
+        self._height_anim.setDuration(200)
         self._height_anim.setEasingCurve(QEasingCurve.OutCubic)
-
-        self._opacity_anim = QPropertyAnimation(self._opacity_effect, b"opacity", self)
-        self._opacity_anim.setDuration(220)
-        self._opacity_anim.setEasingCurve(QEasingCurve.OutCubic)
-
-        self._anim_group.addAnimation(self._height_anim)
-        self._anim_group.addAnimation(self._opacity_anim)
-        self._anim_group.finished.connect(self._on_animation_finished)
+        self._height_anim.finished.connect(self._on_animation_finished)
 
         main_layout.addWidget(self.drawer_widget)
 
         if not expanded:
-            self.drawer_widget.setMaximumHeight(0)
+            self.drawer_widget.setFixedHeight(0)
             self.drawer_widget.setVisible(False)
         else:
+            self.drawer_widget.setMinimumHeight(0)
             self.drawer_widget.setMaximumHeight(16777215)
             self.drawer_widget.setVisible(True)
 
-        def showEvent(self, event):
-            super().showEvent(event)
-            if self._expanded:
-                self.drawer_widget.setVisible(True)
-                self.drawer_widget.setMaximumHeight(16777215)
-                self._opacity_effect.setOpacity(1.0)
+    def _get_drawer_height(self) -> int:
+        return self._drawer_h
 
-        def _on_animation_finished(self):
-            if not self._expanded:
-                self.drawer_widget.setVisible(False)
-                self.drawer_widget.setMaximumHeight(0)
-            else:
-                self.drawer_widget.setMaximumHeight(16777215)
+    def _set_drawer_height(self, h: int):
+        h = max(0, int(h))
+        self._drawer_h = h
+        self.drawer_widget.setFixedHeight(h)
+        if self.layout():
+            self.layout().activate()
+        parent = self.parentWidget()
+        if parent is not None:
+            if parent.layout():
+                parent.layout().activate()
+            parent.update()
+            vp = parent.parentWidget()
+            if vp is not None:
+                vp.update()
+        self.update()
+
+    drawer_height = Property(int, _get_drawer_height, _set_drawer_height)
+
+    def _measure_target_height(self) -> int:
+        """精确测量抽屉完全展开时的自然高度，保持内部布局稳定"""
+        self.content_holder.setMinimumHeight(0)
+        self.content_holder.setMaximumHeight(16777215)
+        avail_w = max(100, self.width() - 2)
+        if self.content_holder.width() <= 100 and avail_w > 100:
+            self.content_holder.resize(avail_w, self.content_holder.height())
+        self.drawer_layout.activate()
+        hint_h = max(self.drawer_layout.sizeHint().height(), self.content_holder.sizeHint().height())
+        return max(hint_h, 60)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self._expanded and self._height_anim.state() != QPropertyAnimation.Running:
+            self.content_holder.setMinimumHeight(0)
+            self.content_holder.setMaximumHeight(16777215)
+            self.drawer_widget.setVisible(True)
+            self.drawer_widget.setMinimumHeight(0)
+            self.drawer_widget.setMaximumHeight(16777215)
+
+    def _on_animation_finished(self):
+        if not self._expanded:
+            self.drawer_widget.setVisible(False)
+            self.drawer_widget.setFixedHeight(0)
+            self.content_holder.setMinimumHeight(0)
+            self.content_holder.setMaximumHeight(16777215)
+        else:
+            self.content_holder.setMinimumHeight(0)
+            self.content_holder.setMaximumHeight(16777215)
+            self.drawer_widget.setMinimumHeight(0)
+            self.drawer_widget.setMaximumHeight(16777215)
+        if self.layout():
+            self.layout().activate()
+        parent = self.parentWidget()
+        if parent is not None:
+            if parent.layout():
+                parent.layout().activate()
+            parent.update()
+        self.update()
 
     def set_content_layout(self, layout):
         """挂载内容布局"""
@@ -251,42 +294,53 @@ class CollapsibleCard(QFrame):
     def set_expanded(self, expanded: bool, animated: bool = True, force: bool = False):
         if getattr(self, "_locked", False) and expanded and not force:
             return
-        if self._expanded == expanded and self.drawer_widget.isVisible() == expanded:
+        if (
+            self._expanded == expanded
+            and self.drawer_widget.isVisible() == expanded
+            and self._height_anim.state() != QPropertyAnimation.Running
+        ):
             return
         self._expanded = expanded
         self.chevron.set_expanded(expanded, animated=animated and self.isVisible())
 
-        # 窗口未显示或未渲染时，严禁使用半截 sizeHint 执行动画，直接瞬时展开且彻底释放最大高度
+        # 窗口未显示或未渲染时，直接瞬时切换并释放高度约束
         if not animated or not self.isVisible():
-            self._anim_group.stop()
+            self._height_anim.stop()
+            self.content_holder.setMinimumHeight(0)
+            self.content_holder.setMaximumHeight(16777215)
             self.drawer_widget.setVisible(expanded)
-            self._opacity_effect.setOpacity(1.0 if expanded else 0.0)
-            self.drawer_widget.setMaximumHeight(16777215 if expanded else 0)
+            if expanded:
+                self.drawer_widget.setMinimumHeight(0)
+                self.drawer_widget.setMaximumHeight(16777215)
+            else:
+                self.drawer_widget.setFixedHeight(0)
+            if self.layout():
+                self.layout().activate()
+            parent = self.parentWidget()
+            if parent is not None and parent.layout():
+                parent.layout().activate()
+                parent.update()
             self.toggled.emit(expanded)
             return
 
-        self._anim_group.stop()
+        cur_h = self.drawer_widget.height() if self.drawer_widget.isVisible() else 0
+        self._height_anim.stop()
+
         if expanded:
+            target_h = self._measure_target_height()
+            self.content_holder.setFixedHeight(target_h)
+            self.drawer_widget.setFixedHeight(cur_h)
             self.drawer_widget.setVisible(True)
-            self.drawer_widget.setMaximumHeight(16777215)
-            self.drawer_widget.layout().activate()
-            hint_h = max(self.drawer_layout.sizeHint().height(), self.drawer_widget.sizeHint().height())
-            target_h = max(hint_h, 60)
-            cur_h = max(0, self.drawer_widget.height())
             self._height_anim.setStartValue(cur_h)
             self._height_anim.setEndValue(target_h)
-
-            self._opacity_anim.setStartValue(self._opacity_effect.opacity())
-            self._opacity_anim.setEndValue(1.0)
         else:
-            cur_h = self.drawer_widget.height()
+            target_h = cur_h if cur_h > 0 else self._measure_target_height()
+            self.content_holder.setFixedHeight(target_h)
+            self.drawer_widget.setFixedHeight(cur_h)
             self._height_anim.setStartValue(cur_h)
             self._height_anim.setEndValue(0)
 
-            self._opacity_anim.setStartValue(self._opacity_effect.opacity())
-            self._opacity_anim.setEndValue(0.0)
-
-        self._anim_group.start()
+        self._height_anim.start()
         self.toggled.emit(expanded)
 
     def toggle(self):

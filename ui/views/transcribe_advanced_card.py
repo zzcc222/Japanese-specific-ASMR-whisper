@@ -102,37 +102,10 @@ class TranscribeAdvancedCard(QWidget):
             "禁用 condition_on_previous_text，防止模型将上一句的幻觉延续到下一句"
         )
 
-        self.chk_strict_thresh = QCheckBox()
-        self.chk_strict_thresh.setChecked(True)
-        self.chk_strict_thresh.setToolTip("严格压缩率检查，一旦模型开始单字或短语复读立即掐断")
-        card_opt2 = _create_r18_option_card(
-            self.chk_strict_thresh,
-            "严格文本压缩率阈值",
-            "严格压缩率检查，一旦模型开始单字或短语复读立即掐断"
-        )
-
-        self.chk_split_punct = QCheckBox()
-        self.chk_split_punct.setChecked(True)
-        self.chk_split_punct.setToolTip("依据日文标点符号（句号、感叹号、问号、逗号、省略号等）将长段落切分为清晰单句")
-        card_opt3 = _create_r18_option_card(
-            self.chk_split_punct,
-            "智能标点断句 (按标点符号切分)",
-            "依据日文标点符号（。！？…、）将长段落切分为清晰单句"
-        )
-
-        self.chk_dedup_identical = QCheckBox()
-        self.chk_dedup_identical.setChecked(True)
-        self.chk_dedup_identical.setToolTip("自动合并相邻或短间隔内完全相同的重复句子，防止字幕刷屏闪烁")
-        card_opt4 = _create_r18_option_card(
-            self.chk_dedup_identical,
-            "消除相邻重复字幕 (去重同义单句)",
-            "自动合并相邻或短间隔 (≤3.0s) 完全相同句子，消除播放器字幕高频闪烁"
-        )
-
         self.chk_filter_r18_moans = QCheckBox()
         self.chk_filter_r18_moans.setChecked(True)
         self.chk_filter_r18_moans.setToolTip("过滤无台词的独立娇喘、呻吟与拟声词整行；若句子中含有实际台词，则完整保留其内部喘息与吐息氛围")
-        card_opt5 = _create_r18_option_card(
+        card_opt2 = _create_r18_option_card(
             self.chk_filter_r18_moans,
             "🔞 过滤独立纯拟音 (保留台词内喘息)",
             "过滤无台词的独立娇喘整行；含有实际台词的句子 100% 原汁原味保留喘息氛围"
@@ -140,9 +113,8 @@ class TranscribeAdvancedCard(QWidget):
 
         r18_grid.addWidget(card_opt1, 0, 0)
         r18_grid.addWidget(card_opt2, 0, 1)
-        r18_grid.addWidget(card_opt3, 1, 0)
-        r18_grid.addWidget(card_opt4, 1, 1)
-        r18_grid.addWidget(card_opt5, 2, 0, 1, 2)
+        r18_grid.setColumnStretch(0, 1)
+        r18_grid.setColumnStretch(1, 1)
         r18_vbox.addLayout(r18_grid)
 
         # 滑块 1：单句最大时长截断
@@ -324,9 +296,6 @@ class TranscribeAdvancedCard(QWidget):
         """运行中锁定状态控制 (转录中强制折叠并锁定折叠卡片，转录结束后记忆恢复)"""
         enabled = not locked
         self.chk_no_prev_text.setEnabled(enabled)
-        self.chk_strict_thresh.setEnabled(enabled)
-        self.chk_split_punct.setEnabled(enabled)
-        self.chk_dedup_identical.setEnabled(enabled)
         self.chk_filter_r18_moans.setEnabled(enabled)
         self.slider_max_dur.setEnabled(enabled)
 

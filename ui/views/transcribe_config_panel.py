@@ -56,9 +56,6 @@ class TranscribeConfigPanel(QObject):
 
         # 3. 高级卡片门面 (R18)
         self.chk_no_prev_text = self.advanced_card.chk_no_prev_text
-        self.chk_strict_thresh = self.advanced_card.chk_strict_thresh
-        self.chk_split_punct = self.advanced_card.chk_split_punct
-        self.chk_dedup_identical = self.advanced_card.chk_dedup_identical
         self.chk_filter_r18_moans = self.advanced_card.chk_filter_r18_moans
         self.slider_max_dur = self.advanced_card.slider_max_dur
         self.lbl_max_dur = self.advanced_card.lbl_max_dur
