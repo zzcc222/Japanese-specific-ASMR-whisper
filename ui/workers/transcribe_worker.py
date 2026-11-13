@@ -57,7 +57,7 @@ class TranscriptionWorker(QThread):
         self.sig_log.emit(f"🚀 任务启动，待处理文件总数: {total_files}")
         self.sig_log.emit(f"⚙️ 目标设备: {self.config.device.upper()} | 模型: {self.config.model_size} | 精度: {self.config.compute_type}")
         self.sig_log.emit(
-            f"🛡️ ASMR 调优策略: 标点断句={'开' if self.config.split_by_punctuation else '关'} | "
+            f"🛡️ ASMR 调优策略: Whisper原生字幕切分 | "
             f"上下文锁定={'开' if not self.config.condition_on_previous_text else '关'} | "
             f"VAD保护={'开' if self.config.vad_filter else '关'} | "
             f"娇喘过滤={'开' if self.config.filter_r18_moans else '关'} | "

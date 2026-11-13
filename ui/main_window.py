@@ -120,8 +120,6 @@ class ASMRTranscriberWindow(QMainWindow):
         self.card_r18 = self.config_panel.card_r18
         self.chk_no_prev_text = self.config_panel.chk_no_prev_text
         self.chk_filter_r18_moans = self.config_panel.chk_filter_r18_moans
-        self.slider_max_dur = self.config_panel.slider_max_dur
-        self.lbl_max_dur = self.config_panel.lbl_max_dur
 
         self.card_vad = self.config_panel.card_vad
         self.switch_vad = self.config_panel.switch_vad
@@ -399,7 +397,7 @@ class ASMRTranscriberWindow(QMainWindow):
         is_loaded = self.transcriber.is_model_loaded() if hasattr(self, "transcriber") else False
         desc, _ = detect_gpu_environment(dev, is_loaded)
         clean_gpu = desc.replace("🟢 ", "").replace("💻 ", "").replace("⚠️ ", "").strip()
-        self.lbl_footer_left.setText(f"🟢 系统就绪  •  CTranslate2 ({clean_gpu})  •  标点优先自然断句 (自然语义边界保护)")
+        self.lbl_footer_left.setText(f"🟢 系统就绪  •  CTranslate2 ({clean_gpu})  •  Whisper 原生字幕时间轴")
 
     def _on_unload_model(self):
         if self.worker and self.worker.isRunning():

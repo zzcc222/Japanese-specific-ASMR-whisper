@@ -75,8 +75,6 @@ class TranscribeRunner(QObject):
             vad_threshold=self.win.slider_vad_thresh.value() / 100.0,
             vad_min_silence_duration_ms=self.win.slider_vad_silence.value() * 100,
             vad_speech_pad_ms=self.win.slider_vad_pad.value() * 50,
-            split_by_punctuation=True,
-            clamp_max_duration=self.win.slider_max_dur.value() / 10.0,
             export_srt=self.win.chk_srt.isChecked(),
             export_vtt=self.win.chk_vtt.isChecked(),
             export_ass=self.win.chk_ass.isChecked(),

@@ -3,8 +3,7 @@
 ASMR Whisper Studio - ASMR 专用转录核心服务引擎
 - 基于 faster-whisper (CTranslate2)
 - 专门针对耳语(囁き声)、吐息(喘息)、拟音与长静音调优
-- 智能标点优先自然断句，杜绝时间硬截断破坏词腹与语法结构
-- 语法词尾与片假名专有名词自动完整保护与熔接
+- 采用 Whisper 原生字幕切分时间轴，搭配防幻觉与独立纯拟音过滤后处理
 - 毫秒级音视频容器时长极速探测 (PyAV / ffprobe)
 - 支持跨任务模型常驻复用与显存一键显式释放
 """
@@ -12,7 +11,6 @@ ASMR Whisper Studio - ASMR 专用转录核心服务引擎
 import gc
 import logging
 import os
-import re
 import time
 from typing import Any, Callable, Dict, List, Optional
 
@@ -31,25 +29,12 @@ from core.subtitle_exporter import (
 )
 from core.text_cleaner import (
     clean_sub_text,
-    coalesce_whisper_subwords,
-    is_forbidden_split,
     is_noise_or_empty_token,
     is_pure_punctuation_or_noise,
     is_repetitive_hallucination,
-    segment_words_hierarchically,
 )
 
 logger = logging.getLogger("ASMRTranscriber")
-
-_RE_STRIP_TRAILING_PUNCT = re.compile(r"[、。！？!?…・，．,.]+$")
-
-# 日语自然叠词与拟态词保护集合（严禁在词级去重中误删）
-_ALLOWED_REDUPLICATION_WORDS = {
-    "では", "よし", "いい", "こちょ", "さわ", "ぎゅ", "ドキ", "ぱち",
-    "トントン", "なで", "だんだん", "いろいろ", "それぞれ", "人々", "次々",
-    "日々", "時々", "シコシコ", "パンパン", "ちゅっちゅ", "ぺろぺろ", "れろれろ",
-    "ちゅ", "すき", "好き", "もっと", "いっぱい", "ダメ", "だめ",
-}
 
 
 class ASMRTranscriber:
@@ -327,14 +312,6 @@ class ASMRTranscriber:
             if not txt or is_pure_punctuation_or_noise(txt):
                 continue
 
-            dur = seg.end - seg.start
-            prev_txt = raw_segments[-1]["text"] if raw_segments else ""
-            if len(txt) == 1 and dur < 0.8:
-                if prev_txt and is_forbidden_split(prev_txt, txt):
-                    pass
-                elif txt not in {"あ", "え", "は", "ん"}:
-                    continue
-
             gap = (float(seg.start) - float(raw_segments[-1]["end"])) if raw_segments else 999.0
             if is_repetitive_hallucination(txt, stream_history, time_gap=gap):
                 continue
@@ -351,21 +328,18 @@ class ASMRTranscriber:
 
             stream_history.append(txt)
 
-            # 词级提取：使用 preserve_token_affixes=True 保留长音（ー）、促音（っ）和标点符号
+            # 词级提取（供 ASS 卡拉OK逐词高亮使用，保持原生段落结构不变）
             cleaned_words: List[Dict[str, Any]] = []
             for w in getattr(seg, "words", None) or []:
                 w_word = clean_sub_text(getattr(w, "word", ""), preserve_token_affixes=True)
-                if w_word:
+                if w_word and not is_noise_or_empty_token(w_word):
                     cleaned_words.append(
                         {
                             "start": float(w.start),
                             "end": float(w.end),
                             "word": w_word,
-                            "seg_break": False,
                         }
                     )
-            if cleaned_words:
-                cleaned_words[-1]["seg_break"] = True
 
             seg_dict = {
                 "start": float(seg.start),
@@ -385,11 +359,11 @@ class ASMRTranscriber:
             return {"status": "cancelled", "segments": []}
 
         # -------------------------------------------------------------
-        # 后处理：子词聚合、标点自然断句、形态素词边界保护与孤立碎片熔接
+        # 后处理：保留 Whisper 原生字幕切分，仅执行防幻觉与 R18 纯拟音过滤去重
         # -------------------------------------------------------------
         if progress_callback:
-            progress_callback(92.0, "正在执行高精度标点自然断句与词边界语法保护...")
-        log("├─ 执行智能标点自然断句与语法词尾保护...")
+            progress_callback(92.0, "正在执行防幻觉与字幕净化后处理...")
+        log("├─ 执行防幻觉与字幕净化后处理 (保留 Whisper 原生字幕切分)...")
 
         final_segments = self._postprocess_segments(raw_segments)
 
@@ -405,7 +379,7 @@ class ASMRTranscriber:
         )
 
         elapsed = time.time() - start_time
-        log(f"└─ 转录完成！共生成 {len(final_segments)} 句自然通顺字幕，耗时: {elapsed:.2f} 秒。")
+        log(f"└─ 转录完成！共生成 {len(final_segments)} 句原生字幕，耗时: {elapsed:.2f} 秒。")
 
         if progress_callback:
             progress_callback(100.0, "全部处理完成！")
@@ -420,16 +394,15 @@ class ASMRTranscriber:
 
     def _postprocess_segments(self, segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        核心后处理器：
-        1. 清除 HTML 标签与多余空白，拦截异常复读
-        2. 聚合 faster-whisper 子词（保护长音 ー、促音 っ、句末标点与完整词汇）
-        3. 精准消除微口吃重复（严格保护单字假名助词与日语合法叠词）
-        4. 结合标点符号、声学停顿、形态素词性与语法边界智能分句
+        核心后处理器（保留 Whisper 原生字幕切分）：
+        1. 清除 HTML 标签、括号台本与多余空白，过滤纯符号噪波
+        2. 拦截异常复读幻觉 (is_repetitive_hallucination)
+        3. 执行独立纯拟音过滤与相邻重复句合并 (clean_r18_segments)
         """
         if not segments:
             return []
 
-        cleaned_raw: List[Dict[str, Any]] = []
+        cleaned_segments: List[Dict[str, Any]] = []
         history: List[str] = []
 
         for seg in segments:
@@ -442,148 +415,64 @@ class ASMRTranscriber:
                 end = float(seg.get("end", 0.0) or 0.0)
             except (ValueError, TypeError):
                 start, end = 0.0, 0.0
-            dur = end - start
-            prev_txt = cleaned_raw[-1]["text"] if cleaned_raw else ""
-            if len(raw_text) == 1 and dur < 0.8:
-                if prev_txt and is_forbidden_split(prev_txt, raw_text):
-                    pass
-                elif raw_text not in {"あ", "え", "は", "ん"}:
-                    continue
 
-            prev_end = float(cleaned_raw[-1]["end"]) if cleaned_raw else None
+            prev_end = float(cleaned_segments[-1]["end"]) if cleaned_segments else None
             p_gap = (start - prev_end) if prev_end is not None else 999.0
             if is_repetitive_hallucination(raw_text, history, time_gap=p_gap):
                 continue
 
             history.append(raw_text)
+
             w_raw = seg.get("words")
-            cleaned_raw.append(
-                {
-                    "start": start,
-                    "end": end,
-                    "text": raw_text,
-                    "words": list(w_raw) if w_raw else None,
-                }
-            )
-
-        if not cleaned_raw:
-            return []
-
-        puncts = list(self.config.punctuations)
-
-        all_words: List[Dict[str, Any]] = []
-        for s in cleaned_raw:
-            words = s.get("words")
-            seg_words_added: List[Dict[str, Any]] = []
-            if words:
-                for w in words:
+            seg_words: List[Dict[str, Any]] = []
+            if w_raw:
+                for w in w_raw:
                     raw_w_str = w.get("word", "") if isinstance(w, dict) else getattr(w, "word", "")
                     w_txt = clean_sub_text(raw_w_str, preserve_token_affixes=True)
                     if w_txt and not is_noise_or_empty_token(w_txt):
                         try:
                             w_s = float(
-                                w.get("start", s["start"])
+                                w.get("start", start)
                                 if isinstance(w, dict)
-                                else getattr(w, "start", s["start"])
+                                else getattr(w, "start", start)
                             )
                             w_e = float(
-                                w.get("end", s["end"])
+                                w.get("end", end)
                                 if isinstance(w, dict)
-                                else getattr(w, "end", s["end"])
+                                else getattr(w, "end", end)
                             )
                         except (ValueError, TypeError):
-                            w_s, w_e = float(s.get("start", 0.0)), float(s.get("end", 0.0))
-                        # 抑制 faster-whisper DTW 对齐在跨越 VAD 静音段时将新句首词 start 向前回溯拉长的问题
-                        max_w_dur = max(1.6, len(w_txt) * 0.40)
-                        if w_e - w_s > max_w_dur:
-                            w_s = round(w_e - max(0.25, min(1.2, len(w_txt) * 0.22)), 3)
-                        seg_words_added.append(
+                            w_s, w_e = start, end
+                        seg_words.append(
                             {
                                 "start": w_s,
                                 "end": w_e,
                                 "word": w_txt,
-                                "seg_break": False,
                             }
                         )
-            if seg_words_added:
-                seg_words_added[-1]["seg_break"] = True
-                all_words.extend(seg_words_added)
-            else:
-                txt = clean_sub_text(s.get("text", ""))
-                if txt and not is_pure_punctuation_or_noise(txt):
-                    s_start = float(s.get("start", 0.0))
-                    s_end = float(s.get("end", 0.0))
-                    max_s_dur = max(2.5, float(self.config.clamp_max_duration or 12.0))
-                    if s_end - s_start > max_s_dur:
-                        s_end = round(s_start + max_s_dur, 3)
-                    all_words.append(
-                        {
-                            "start": s_start,
-                            "end": s_end,
-                            "word": txt,
-                            "seg_break": True,
-                        }
-                    )
 
-        # 第一步：轻量级子词标点/长音归属规范化（不破坏 Whisper 原生词汇与段落结构）
-        all_words = coalesce_whisper_subwords(all_words)
-
-        # 第二步：词级微口吃去重（严格要求表层词形一致、词长 >= 2 且不在叠词白名单内，杜绝误吞助词 に 与叠词 ではでは）
-        if self.config.deduplicate_identical and len(all_words) >= 2:
-            deduped_words = [all_words[0]]
-            for w in all_words[1:]:
-                prev_w = deduped_words[-1]
-                w_surf = _RE_STRIP_TRAILING_PUNCT.sub("", w.get("word", "")).strip()
-                prev_surf = _RE_STRIP_TRAILING_PUNCT.sub("", prev_w.get("word", "")).strip()
-                try:
-                    w_start = float(w.get("start", 0.0) or 0.0)
-                    w_end = float(w.get("end", 0.0) or 0.0)
-                    prev_end = float(prev_w.get("end", 0.0) or 0.0)
-                except (ValueError, TypeError):
-                    w_start, w_end, prev_end = 0.0, 0.0, 0.0
-
-                gap = max(0.0, w_start - prev_end)
-                if (
-                    len(w_surf) >= 2
-                    and w_surf == prev_surf
-                    and w_surf not in _ALLOWED_REDUPLICATION_WORDS
-                    and gap <= 0.25
-                ):
-                    prev_w["end"] = max(prev_end, w_end)
-                    if w.get("seg_break"):
-                        prev_w["seg_break"] = True
-                    # 若后一个重复词带有句末标点而前词没有，保留句末标点
-                    trailing_m = _RE_STRIP_TRAILING_PUNCT.search(w.get("word", ""))
-                    if trailing_m and not _RE_STRIP_TRAILING_PUNCT.search(prev_w.get("word", "")):
-                        prev_w["word"] = prev_w["word"] + trailing_m.group(0)
-                else:
-                    deduped_words.append(w)
-            all_words = deduped_words
-
-        # 第三步：基于 Whisper 原生时间戳 + 标点切分 + 单句最大时长弹性断句
-        min_dur = getattr(self.config, "min_segment_duration", 2.0)
-        if all_words:
-            final_refined = segment_words_hierarchically(
-                all_words,
-                max_duration=self.config.clamp_max_duration,
-                min_duration=min_dur,
-                comfort_duration=5.0,
-                punctuations=puncts,
-                split_by_punctuation=self.config.split_by_punctuation,
+            cleaned_segments.append(
+                {
+                    "start": start,
+                    "end": end,
+                    "text": raw_text,
+                    "words": seg_words,
+                }
             )
-        else:
-            final_refined = []
 
-        if final_refined and (self.config.filter_r18_moans or self.config.deduplicate_identical):
-            final_refined = clean_r18_segments(
-                final_refined,
+        if not cleaned_segments:
+            return []
+
+        if self.config.filter_r18_moans or self.config.deduplicate_identical:
+            cleaned_segments = clean_r18_segments(
+                cleaned_segments,
                 filter_moans=self.config.filter_r18_moans,
                 deduplicate_identical=self.config.deduplicate_identical,
                 max_dedup_gap=self.config.max_dedup_gap,
             )
 
-        logger.info(f"成功重整并保护 {len(final_refined)} 个自然语义字幕句段！")
-        return final_refined
+        logger.info(f"成功输出 {len(cleaned_segments)} 个 Whisper 原生字幕句段！")
+        return cleaned_segments
 
     def export_subtitles(
         self,

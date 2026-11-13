@@ -7,10 +7,10 @@ ASMR Whisper Studio - 配置管理与持久化模块
 
 import os
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Optional, Union, Tuple, Dict, Any
 
-from core.text_cleaner import DEFAULT_ASMR_PROMPT, DEFAULT_PUNCTUATIONS
+from core.text_cleaner import DEFAULT_ASMR_PROMPT
 from core.prompt_parser import DEFAULT_CUSTOM_PRESETS
 
 # 音视频媒体扩展名单一事实源 (Single Source of Truth)
@@ -62,12 +62,6 @@ class ASMRTranscriberConfig:
     vad_threshold: float = 0.35               # 降低激活阈值（默认通常0.5），保证微弱耳语不被丢弃
     vad_min_silence_duration_ms: int = 800    # 判定为静音的最小毫秒数
     vad_speech_pad_ms: int = 400              # 语音前后缓冲，防止吞掉起承转合弱音
-
-    # 时间戳与标点断句后处理
-    split_by_punctuation: bool = True        # 依据标点符号自动断句
-    punctuations: List[str] = field(default_factory=lambda: list(DEFAULT_PUNCTUATIONS))
-    clamp_max_duration: float = 12.0         # 标点优先断句最大时长参考(秒)，默认 12.0s 给足语境完整度
-    min_segment_duration: float = 2.0        # 单句最小持续时间预算(秒)，防止超短语气词闪现碎片
 
     # 字幕导出配置
     export_srt: bool = True
@@ -150,7 +144,6 @@ class SettingsManager:
             "vad_threshold_slider": 35,
             "vad_silence_slider": 8,
             "vad_pad_slider": 8,
-            "max_duration_slider": 120,
             "custom_presets": [dict(p) for p in DEFAULT_CUSTOM_PRESETS],
             "prompt_preset_index": 0,
             "initial_prompt": DEFAULT_ASMR_PROMPT,

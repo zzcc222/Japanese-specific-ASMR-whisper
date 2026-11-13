@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 ASMR Whisper Studio - R18防幻觉与Silero VAD高级调优卡片 (TranscribeAdvancedCard)
-包含日系 R18 防幻觉选项、单句截断滑块、单行最大字数上限滑块与 Silero VAD 语音活动检测折叠卡片
+包含日系 R18 防幻觉选项与 Silero VAD 语音活动检测折叠卡片
 """
 
 from PySide6.QtCore import Qt
@@ -117,39 +117,6 @@ class TranscribeAdvancedCard(QWidget):
         r18_grid.setColumnStretch(1, 1)
         r18_vbox.addLayout(r18_grid)
 
-        # 滑块 1：单句最大时长截断
-        slider_card = QFrame()
-        slider_card.setMinimumHeight(32)
-        slider_card.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-        slider_card.setStyleSheet("background-color: transparent; border-top: 1px solid #F4F4F5; padding-top: 6px;")
-        slider_layout = QHBoxLayout(slider_card)
-        slider_layout.setContentsMargins(0, 4, 0, 0)
-        lbl_slider_title = QLabel("单句最大时长截断:")
-        lbl_slider_title.setFixedWidth(120)
-        lbl_slider_title.setStyleSheet("font-size: 12px; font-weight: 700; color: #3F3F46;")
-        slider_layout.addWidget(lbl_slider_title)
-
-        self.slider_max_dur = QSlider(Qt.Horizontal)
-        self.slider_max_dur.setRange(40, 150)
-        self.slider_max_dur.setValue(120)
-        self.slider_max_dur.valueChanged.connect(self._on_max_dur_changed)
-
-        self.lbl_max_dur = QLabel("12.0 秒 (标点自然断句优先)")
-        self.lbl_max_dur.setStyleSheet("""
-            background-color: #F5F3FF;
-            color: #6D28D9;
-            border: 1px solid #DDD6FE;
-            border-radius: 6px;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: 700;
-        """)
-        self.lbl_max_dur.setFixedWidth(180)
-
-        slider_layout.addWidget(self.slider_max_dur, 1)
-        slider_layout.addWidget(self.lbl_max_dur)
-        r18_vbox.addWidget(slider_card)
-
         self.card_r18.set_content_layout(r18_vbox)
 
     def _init_vad_card(self):
@@ -252,10 +219,6 @@ class TranscribeAdvancedCard(QWidget):
         vad_vbox.addWidget(self.vad_param_widget)
         self.card_vad.set_content_layout(vad_vbox)
 
-    def _on_max_dur_changed(self, val: int):
-        sec = val / 10.0
-        self.lbl_max_dur.setText(f"{sec:.1f} 秒 (标点自然断句优先)")
-
     def _on_vad_toggled(self, checked: bool):
         self.vad_param_widget.setEnabled(checked)
         if checked:
@@ -297,7 +260,6 @@ class TranscribeAdvancedCard(QWidget):
         enabled = not locked
         self.chk_no_prev_text.setEnabled(enabled)
         self.chk_filter_r18_moans.setEnabled(enabled)
-        self.slider_max_dur.setEnabled(enabled)
 
         self.switch_vad.setEnabled(enabled)
         self.btn_reset_vad.setEnabled(enabled)

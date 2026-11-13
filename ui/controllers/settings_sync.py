@@ -50,7 +50,6 @@ class SettingsSync:
                 "vad_threshold_slider": win.slider_vad_thresh.value(),
                 "vad_silence_slider": win.slider_vad_silence.value(),
                 "vad_pad_slider": win.slider_vad_pad.value(),
-                "max_duration_slider": win.slider_max_dur.value(),
                 "custom_presets": win.custom_presets,
                 "prompt_preset_index": win.combo_prompt_preset.currentIndex(),
                 "initial_prompt": win.edit_prompt.text(),
@@ -135,9 +134,6 @@ class SettingsSync:
                 win.chk_no_prev_text.setChecked(bool(cfg["no_previous_text"]))
             if "filter_r18_moans" in cfg:
                 win.chk_filter_r18_moans.setChecked(bool(cfg["filter_r18_moans"]))
-
-            if "max_duration_slider" in cfg:
-                win.slider_max_dur.setValue(int(cfg["max_duration_slider"]))
 
             win.switch_vad.setChecked(bool(cfg.get("vad_enabled", False)))
             if "vad_threshold_slider" in cfg:
@@ -314,7 +310,6 @@ class SettingsSync:
 
         win.chk_no_prev_text.toggled.connect(win._queue_save_settings)
         win.chk_filter_r18_moans.toggled.connect(win._queue_save_settings)
-        win.slider_max_dur.valueChanged.connect(win._queue_save_settings)
 
         win.switch_vad.toggled.connect(win._queue_save_settings)
         win.slider_vad_thresh.valueChanged.connect(win._queue_save_settings)

@@ -61,16 +61,21 @@ def run_all_checks():
     print("  ✅ THEME_TOKENS & hex_to_ass_bgr 校验通过")
 
     print("=" * 68)
-    print("🚀 [3/8] 检验已安全移除生硬字数断句 (max_chars) & 校验 SpinBox 步进上下箭头样式")
+    print("🚀 [3/8] 检验已安全移除自定义断句滑块与规则 (slider_max_dur / slider_max_chars) & 校验 SpinBox 步进上下箭头样式")
     assert not hasattr(win, "slider_max_chars"), "slider_max_chars should be removed from MainWindow"
+    assert not hasattr(win, "slider_max_dur"), "slider_max_dur should be removed from MainWindow"
+    assert not hasattr(win, "lbl_max_dur"), "lbl_max_dur should be removed from MainWindow"
     assert not hasattr(cfg_default, "max_chars"), "max_chars should be removed from ASMRTranscriberConfig"
+    assert not hasattr(cfg_default, "clamp_max_duration"), "clamp_max_duration should be removed from ASMRTranscriberConfig"
+    assert not hasattr(cfg_default, "split_by_punctuation"), "split_by_punctuation should be removed from ASMRTranscriberConfig"
     assert "max_chars_slider" not in default_settings, "max_chars_slider should be removed from default_settings"
+    assert "max_duration_slider" not in default_settings, "max_duration_slider should be removed from default_settings"
     from ui.styles import LIGHT_STYLE_SHEET
     assert "spin_up.svg" in LIGHT_STYLE_SHEET and "spin_down.svg" in LIGHT_STYLE_SHEET
     for svg_name in ("spin_up.svg", "spin_down.svg", "spin_up_hover.svg", "spin_down_hover.svg"):
         svg_path = os.path.join(ROOT_DIR, "assets", svg_name)
         assert os.path.isfile(svg_path), f"Missing SpinBox arrow icon: {svg_path}"
-    print("  ✅ 已彻底移除 max_chars 生硬字数断句，SpinBox 上下箭头图标与 QSS 校验通过")
+    print("  ✅ 已彻底移除自定义时长/字数断句规则与滑块，SpinBox 上下箭头图标与 QSS 校验通过")
 
     print("=" * 68)
     print("🚀 [4/8] 检验 FileCardRowWidget 底部单文件内联进度条渲染")
