@@ -82,7 +82,7 @@ def main():
         if sys.platform == "win32":
             try:
                 import ctypes
-                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ASMRWhisperStudio.Transcriber.RTX5070.v3.2")
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ASMRWhisperStudio.Transcriber.RTX5070.v3.3")
             except Exception:
                 pass
 

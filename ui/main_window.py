@@ -43,7 +43,7 @@ class ASMRTranscriberWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("central_window")
-        self.setWindowTitle("ASMR Whisper Studio v3.2 - 日系音声专用语音识别转录")
+        self.setWindowTitle("ASMR Whisper Studio v3.3 - 日系音声专用语音识别转录")
         self.setMinimumSize(1020, 680)
         self.resize(1920, 1080)
         self._saved_window_w = 1920
@@ -212,7 +212,7 @@ class ASMRTranscriberWindow(QMainWindow):
         else:
             lbl_logo.setText("🎙️")
 
-        self.lbl_app_title = QLabel("ASMR Whisper v3.2")
+        self.lbl_app_title = QLabel("ASMR Whisper v3.3")
         self.lbl_app_title.setStyleSheet("font-size: 14px; font-weight: 800; color: #18181B; letter-spacing: -0.2px;")
         brand_layout.addWidget(lbl_logo, alignment=Qt.AlignVCenter)
         brand_layout.addWidget(self.lbl_app_title, alignment=Qt.AlignVCenter)
@@ -297,7 +297,7 @@ class ASMRTranscriberWindow(QMainWindow):
 
         self.lbl_footer_left = QLabel(self.footer_bar)
         self.lbl_footer_left.setStyleSheet("color: #71717A; font-size: 11px;")
-        lbl_footer_right = QLabel("ASMR Whisper Studio v3.2")
+        lbl_footer_right = QLabel("ASMR Whisper Studio v3.3")
         lbl_footer_right.setStyleSheet("color: #A1A1AA; font-size: 11px;")
 
         footer_layout.addWidget(self.lbl_footer_left)

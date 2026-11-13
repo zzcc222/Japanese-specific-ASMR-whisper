@@ -19,7 +19,7 @@ if sys.platform == "win32":
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOWNLOADS_DIR = r"C:\Users\33639\Downloads"
-VERSION = "3.2"
+VERSION = "3.3"
 INSTALLER_NAME = f"ASMR-Whisper-Studio-Setup({VERSION}).exe"
 
 ISCC_CANDIDATES = [
